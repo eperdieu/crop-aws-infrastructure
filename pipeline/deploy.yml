@@ -1,0 +1,46 @@
+name: build and push
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint
+        run: echo "run your linter here"
+      - name: Unit tests
+        run: echo "run your unit tests here"
+      - name: Integration tests
+        run: echo "run your integration tests here"
+
+  build_and_push:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Log in to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: example_app
+          TAG: ${{ github.sha }}
+        run: |
+          docker build -t "$REGISTRY/$REPOSITORY:$TAG" .
+          docker push "$REGISTRY/$REPOSITORY:$TAG"
