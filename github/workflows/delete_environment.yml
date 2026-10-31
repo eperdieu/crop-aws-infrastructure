@@ -1,0 +1,46 @@
+name: Delete Environment Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to delete (e.g., staging, prod)'
+        required: true
+        default: 'staging'
+
+jobs:
+  delete-infra:
+    runs-on: ubuntu-latest
+    name: Delete Infrastructure with Terraform
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        # Authenticates with AWS using IAM user access keys stored in GitHub Secrets
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.14.3
+
+      - name: Initialize Terraform
+        run: terraform init
+        working-directory: ./terraform
+
+      - name: Switch to Environment Workspace
+        run: |
+          terraform workspace select ${{ github.event.inputs.environment }} || \
+          terraform workspace new ${{ github.event.inputs.environment }}
+        working-directory: ./terraform
+
+      - name: Delete Terraform Configuration
+        run: |
+          terraform destroy -auto-approve
+        working-directory: ./terraform

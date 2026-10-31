@@ -1,0 +1,110 @@
+# apps/v1 is the API version for Deployment Resources
+apiVersion: apps/v1
+# Handles scaling, updates, and ensures desired number of pods are running
+kind: Deployment
+metadata:
+  # Name of this deployment (WILL BE USED in kubectl commands)
+  # kubectl get deployments -n isa-app (Example command)
+  name: backend
+  # Namespace specified in namespace.yaml
+  namespace: isa-app
+  labels:
+    # Identifies which application this deployment belongs to
+    app: backend
+
+spec:
+  # Number of pod replicas to maintain
+  # Chose 2 pods for high availability
+  replicas: 2
+  # Strategy for updating pods when a new version is deployed
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # Max number of pods that can be unavailable during update
+      maxUnavailable: 1
+      # Max number of extra pods that can be created during update (3 Total at most - 2 existing + 1 extra)
+      maxSurge: 1
+
+  selector:
+    matchLabels:
+      # Manages pods with this label
+      app: backend
+
+  template:
+    metadata:
+      labels:
+        # Ensures pods created by this deployment have this label
+        app: backend
+        
+    spec:
+      containers:
+        - name: backend
+          # Docker image for the backend application (From ECR)
+          image: 495117181746.dkr.ecr.us-east-2.amazonaws.com/isa-datamine-backend:latest
+          # Always =  checks ECR for the latest image on each pod start
+          imagePullPolicy: Always
+
+          ports:
+          # Port number that was exposed in the Dockerfile
+          - containerPort: 5000
+            # Port Name
+            name: http
+            # Protocol used by the port
+            protocol: TCP
+          
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: rds-credentials
+                  key: DATABASE_URL
+
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openai-credentials
+                  key: api_key 
+
+            - name: ENVIRONMENT
+              value: "development"   
+
+          # Resource requests and limits for CPU and memory
+          resources:
+            # Guaranteed minimum resources for the container
+            requests:
+              # minimum memory guranteed
+              memory: "256Mi"
+              # minimum CPU guaranteed
+              cpu: "250m"
+            limits:
+              # maximum memory allowed
+              memory: "512Mi"
+              # maximum CPU allowed
+              cpu: "500m"
+
+          
+          livenessProbe:
+            # Sends an HTTP GET request to check health of the container
+            httpGet:
+              path: /health
+              port: 5000
+            # Initial delay before starting liveness checks
+            initialDelaySeconds: 60
+            # Frequency of liveness checks
+            periodSeconds: 10
+            # Number of consecutive failures before restarting the container
+            failureThreshold: 3
+            
+          # Checks if container is ready to recieve traffic
+          # If it fails, the pod is removed from service endpoints
+          # Once it passes, it's added back to service endpoints
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+              # Initial delay before starting readiness checks
+            initialDelaySeconds: 30
+            # Frequency of readiness checks
+            periodSeconds: 5
+            # Number of consecutive failures before marking as not ready
+            failureThreshold: 3

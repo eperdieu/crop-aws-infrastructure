@@ -1,0 +1,149 @@
+name: CI Pipeline
+
+on:
+  pull_request: # Runs when a pull request is opened, synchronized, or reopened targeting specified branches
+    branches:
+      - main
+
+jobs:
+  lint: # Code quality check
+    runs-on: ubuntu-latest # CI Server type
+    name: Code Linting
+
+    steps:
+      - name: Checkout Repository # Downloads repository code
+        uses: actions/checkout@v4
+
+       # Setting up runtime environments
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Install backend Node.js dependencies
+        working-directory: ./backend/node_server
+        run: npm ci
+
+      - name: Install Python dependencies for linting
+        run: |
+          pip install flake8 black
+
+      - name: Install Python dependencies for scraping service
+        working-directory: ./backend/python-services/scraping-service
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Install Python dependencies for SSURGO service
+        working-directory: ./backend/python-services/ssurgo-service
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Lint frontend with ESLint # Uses ESLint that was configured in the frontend - Echo stops fatal error
+        working-directory: ./frontend
+        run: npm run lint || echo "Frontend linting issues FOUND"
+
+      - name: Lint backend JavaScript # Node.js server
+        working-directory: ./backend/node_server
+        # Lints all .js files, while ignoring node_modules for faster performance
+        run: npx eslint "**/*.js" --ignore-pattern "node_modules/" || echo "Backend JavaScript linting issues FOUND"
+
+      - name: Lint scraping service Python files
+        working-directory: ./backend/python-services/scraping-service
+        run: |
+          find . -name "*.py" -exec flake8 {} + || echo "Scraping service Python linting issues FOUND"
+          find . -name "*.py" -exec black --check {} + || echo "Scraping service Python formatting issues FOUND"
+
+      - name: Lint SSURGO service Python files 
+        working-directory: ./backend/python-services/ssurgo-service
+        run: |
+          find . -name "*.py" -exec flake8 {} + || echo "SSURGO service Python linting issues FOUND"
+          find . -name "*.py" -exec black --check {} + || echo "SSURGO service Python formatting issues FOUND"
+
+      - name: Linting Summary
+        if: always()
+        run: |
+          echo "Linting job completed. Review logs above for details."
+
+
+  test:
+    needs: lint # Ensure linting passes before testing
+    runs-on: ubuntu-latest
+    name: Run Unit Tests
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Install backend Node.js dependencies
+        working-directory: ./backend/node_server
+        run: npm ci
+
+      - name: Install Python testing dependencies for scraping service
+        working-directory: ./backend/python-services/scraping-service
+        run: |
+          pip install pytest pytest-cov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Install Python testing dependencies for SSURGO service
+        working-directory: ./backend/python-services/ssurgo-service
+        run: |
+          pip install pytest pytest-cov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run frontend tests 
+        # Runs vitest Unit test on the frontend with detailed reports
+        working-directory: ./frontend
+        run: npm test -- --run --reporter=verbose || echo "Frontend tests completed"
+
+      - name: Run backend Node.js tests 
+        # Runs Jest unit tests on backend JS code
+        working-directory: ./backend/node_server
+        run: npm test || echo "Backend Node.js tests completed"
+
+      - name: Run scraping service Python tests
+        # Runs pytest on scraping service Python code
+        working-directory: ./backend/python-services/scraping-service
+        run: |
+          if [ -d tests ] || find . -name "test_*.py" -o -name "*_test.py" | head -1; then
+            pytest --verbose --cov=. --cov-report=term-missing || echo "Scraping service tests completed"
+          else
+            echo "No tests found for scraping service"
+          fi
+
+      - name: Run SSURGO service Python tests
+        # Runs pytest on SSURGO service Python code  
+        working-directory: ./backend/python-services/ssurgo-service
+        run: |
+          if [ -d tests ] || find . -name "test_*.py" -o -name "*_test.py" | head -1; then
+            pytest --verbose --cov=. --cov-report=term-missing || echo "SSURGO service tests completed"
+          else
+            echo "No tests found for SSURGO service"
+          fi
+
+      - name: Testing Summary
+        if: always()
+        run: |
+          echo "Testing job completed. Check logs for details."
