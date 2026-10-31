@@ -1,0 +1,22 @@
+# Secrets and credentials
+.env
+.env.*
+*.pem
+*.key
+credentials
+*secret*
+*password*
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+node_modules/
+__pycache__/
