@@ -1,15 +1,62 @@
-# C.R.O.P. Cloud Infrastructure and Delivery Pipeline
+# C.R.O.P. Conservation and Revenue Opportunity Portal
 
-Conservation & Revenue Opportunity Portal (CROP) is a farmer facing web platform built with the Indiana Soybean Alliance through Purdue's Data Mine corporate partners program. It brings conservation and incentive programs for Indiana corn and soybean farmers into one place, matched to each farmer's profile. Presented at the 2026 Corporate Partners Symposium.
+Indiana Soybean Alliance | Purdue Data Mine
+
+> **Note:** This is not the full project. This repo only shows my own work and findings as the DevOps and cloud engineer on the team. The project's source code, data, and credentials belong to Purdue's Data Mine and the Indiana Soybean Alliance, and they are private and not included here.
+
+An interactive web platform that gathers agricultural conservation and incentive programs from sources such as the USDA and NRCS and shows them to farmers based on where their fields are. It makes it easier for farmers to find and use sustainable growing programs by putting them in one place. Presented at the 2026 Corporate Partners Symposium.
 
 This repo documents my contribution as the DevOps and cloud engineer on a team of 8. The partner's code, data, and credentials are private and are not included here.
 
 ## The problem
-Indiana corn and soybean farmers face a large, confusing set of incentive programs that take a lot of time to navigate. CROP collects profile information from the farmer (kept private to that farmer), gathers program details through web scraping, uses OpenAI to help match programs to the farmer's profile and location, and shows eligibility, requirements, and financial returns in one interface.
+Farmers have many programs available for adopting sustainable growing practices, but the programs are complex and spread across many sources, so they often go unused. CROP brings them together and presents them geographically.
 
-Context: the project reflects the goals of the Indiana State Department of Agriculture and supports the aims of Indiana House Bill 1149 (March 2025) on centralized conservation and incentive programs. Earning farmers' trust with their data was a core design constraint.
+## What the platform does (team work)
+* Interactive map for searching programs by location
+* Attribute based filtering to find programs that fit specific criteria
+* Program recommendations based on a farmer's field data and soil type
+* Field management: farmers upload field boundaries as shapefiles and track crop history, cover crops, and inputs
+* Admin dashboard where the Indiana Soybean Alliance manages program listings and scrape URLs
+* Roadmap: an AI chatbot to guide farmers through the application process
+
+## System overview
+* React and Vite frontend
+* Node.js and Express REST API
+* Python and FastAPI services for web scraping and SSURGO soil data
+* Selenium for pages that need a real browser
+* Job queue between the API and the scraping service (AWS SQS, with ElasticMQ for local development)
+* PostgreSQL database
+* OpenAI API for extracting program data and explaining recommendations
+* Docker and Docker Compose for containers
+* AWS and Terraform for production infrastructure
+
+![Architecture diagram](architecture/architecture.png)
 
 ## My role
 * Built and maintained AWS infrastructure as code with Terraform
 * Set up the CI/CD pipeline, including environment promotion, secret management, and tests (unit, linting, and integration)
-* Added monitoring and log aggregation, and created backups with
+* Added monitoring and log aggregation, and created backups with database migrations inside the pipeline
+* Contributed to backend development: built APIs and implemented authentication
+* Wrote the documentation and handoff materials for the next team
+
+## Infrastructure
+* Containers run on AWS ECS Fargate, with images stored in ECR
+* PostgreSQL on Amazon RDS
+* AWS Secrets Manager for credentials
+* Three separate environments with their own configuration
+
+## Decisions I worked on
+* Moved from EKS to ECS Fargate to reduce operational overhead for a small team
+* Replaced a NAT Gateway with VPC interface endpoints to lower cost
+
+## Documentation in this repo
+* [Deployment notes](docs/deployment-notes.md): how the frontend and backend were containerized and shipped through CI/CD
+* [Git workflow](docs/git-workflow.md): the branch and pull request process our team followed
+
+## Skills shown
+AWS (ECS Fargate, RDS, ECR, Secrets Manager), Terraform, Docker, CI/CD, GitHub Actions, Python, SQL, API development, authentication, technical documentation
+
+## Notes
+This repo contains no keys, passwords, state files, account IDs, or partner data.
+
+Connect with me on LinkedIn: https://www.linkedin.com/in/ethan-perdieu-1438271b8
