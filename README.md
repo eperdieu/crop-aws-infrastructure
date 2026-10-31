@@ -1,4 +1,4 @@
-![C.R.O.P. banner](assets/crop_banner_640x320.png)
+![C.R.O.P. banner](assets/crop_banner.png)
 
 # C.R.O.P. Conservation and Revenue Opportunity Portal
 
@@ -8,7 +8,7 @@ Indiana Soybean Alliance | Purdue Data Mine
 
 An interactive web platform that gathers agricultural conservation and incentive programs from sources such as the USDA and NRCS and shows them to farmers based on where their fields are. It makes it easier for farmers to find and use sustainable growing programs by putting them in one place. Presented at the 2026 Corporate Partners Symposium.
 
-This repo documents my contribution as the DevOps and cloud engineer on a team of 8.
+This repo documents my contribution as the DevOps and cloud engineer on a team of 8, from July 2025 to June 2026.
 
 ## The problem
 Farmers have many programs available for adopting sustainable growing practices, but the programs are complex and spread across many sources, so they often go unused. CROP brings them together and presents them geographically.
@@ -32,17 +32,20 @@ Farmers have many programs available for adopting sustainable growing practices,
 * Docker and Docker Compose for containers
 * AWS and Terraform for production infrastructure
 
-![Architecture diagram](architecture/architecture.png)
+## CI/CD pipeline
+The original Fall 2025 pipeline design is below. It deployed to EKS. The team later moved to ECS Fargate, so the deploy stage now targets ECS instead.
+
+![CI/CD pipeline, original Fall 2025 design](architecture/cicd_pipeline_fall2025.png)
 
 ## My role
 * Built and maintained AWS infrastructure as code with Terraform
-* Set up the CI/CD pipeline, including environment promotion, secret management, and tests (unit, linting, and integration)
-* Added monitoring and log aggregation, and created backups with database migrations inside the pipeline
+* Set up the GitHub Actions CI/CD pipeline, including environment promotion, secret management, linting and unit tests, and database migrations
 * Contributed to backend development: built APIs and implemented authentication
 * Wrote the documentation and handoff materials for the next team
 
 ## Infrastructure
 * Containers run on AWS ECS Fargate, with images stored in ECR
+* Frontend hosted on S3 and CloudFront
 * PostgreSQL on Amazon RDS
 * AWS Secrets Manager for credentials
 * Three separate environments with their own configuration
