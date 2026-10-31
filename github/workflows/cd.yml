@@ -1,0 +1,39 @@
+name: CD Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to (e.g., staging, prod)'
+        required: true
+        default: 'staging'
+
+jobs:
+  create-infra:
+    uses: ./.github/workflows/create_environment.yml
+    with:
+      environment: ${{ github.event.inputs.environment }}
+    secrets: inherit
+  
+  deploy:
+    needs: create-infra
+    uses: ./.github/workflows/deploy_environment.yml
+    with:
+      environment: ${{ github.event.inputs.environment }}
+    secrets: inherit
+  
+  apply-schema:
+    needs: deploy
+    uses: ./.github/workflows/apply_schema.yml
+    with:
+      environment: ${{ github.event.inputs.environment }}
+    secrets: inherit
+
+  create-admin:
+    needs: apply-schema
+    uses: ./.github/workflows/create_admin.yml
+    with:
+      environment: ${{ github.event.inputs.environment }}
+    secrets: inherit
+
+      
