@@ -30,7 +30,7 @@ Farmers have many programs available for adopting sustainable growing practices,
 * Docker and Docker Compose for containers
 * AWS and Terraform for production infrastructure
 
-![Architecture diagram](architecture/architecture.png)
+![Architecture diagram]()
 
 ## My role
 * Built and maintained AWS infrastructure as code with Terraform
