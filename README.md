@@ -1,3 +1,5 @@
+![C.R.O.P. banner](assets/crop_banner.png)
+
 # C.R.O.P. Conservation and Revenue Opportunity Portal
 
 Indiana Soybean Alliance | Purdue Data Mine
@@ -6,7 +8,7 @@ Indiana Soybean Alliance | Purdue Data Mine
 
 An interactive web platform that gathers agricultural conservation and incentive programs from sources such as the USDA and NRCS and shows them to farmers based on where their fields are. It makes it easier for farmers to find and use sustainable growing programs by putting them in one place. Presented at the 2026 Corporate Partners Symposium.
 
-This repo documents my contribution as the DevOps and cloud engineer on a team of 8. The partner's code, data, and credentials are private and are not included here.
+This repo documents my contribution as the DevOps and cloud engineer on a team of 8.
 
 ## The problem
 Farmers have many programs available for adopting sustainable growing practices, but the programs are complex and spread across many sources, so they often go unused. CROP brings them together and presents them geographically.
@@ -30,7 +32,7 @@ Farmers have many programs available for adopting sustainable growing practices,
 * Docker and Docker Compose for containers
 * AWS and Terraform for production infrastructure
 
-![Architecture diagram]()
+![Architecture diagram](architecture/architecture.png)
 
 ## My role
 * Built and maintained AWS infrastructure as code with Terraform
