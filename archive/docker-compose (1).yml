@@ -1,0 +1,135 @@
+services:
+  # Selenium WebDriver service
+  selenium:
+    image: selenium/standalone-chrome:145.0.7632.116-chromedriver-145.0.7632.117-grid-4.41.0-20260222
+    restart: unless-stopped  # Keep running 24/7
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    environment:
+      - SE_SESSION_TIMEOUT=300
+      - SE_NODE_SESSION_TIMEOUT=300
+    networks:
+      - app-network
+
+  # Local SQS-compatible queue (ElasticMQ) — replaces real SQS in development
+  elasticmq:
+    image: softwaremill/elasticmq-native:1.7.0
+    ports:
+      - "9324:9324"
+    volumes:
+      - ./elasticmq/elasticmq.conf:/opt/elasticmq.conf
+    networks:
+      - app-network
+
+  # Scraping REST API — serial queue backed by SQS
+  scraper:
+    build:
+      context: ./python-services/scraping-service
+      dockerfile: Dockerfile
+    image: web-scraper:latest
+    ports:
+      - "${SCRAPING_SERVICE_PORT:-8001}:${SCRAPING_SERVICE_PORT:-8001}"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SCRAPING_SERVICE_PORT=${SCRAPING_SERVICE_PORT:-8001}
+      - SCRAPING_QUEUE_URL=${SCRAPING_QUEUE_URL}
+      - LOCAL_SQS_SERVER_URL=${LOCAL_SQS_SERVER_URL}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - DOCKER_CONTAINER=${DOCKER_CONTAINER:-1}
+    depends_on:
+      selenium:
+        condition: service_healthy
+      elasticmq:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:${SCRAPING_SERVICE_PORT:-8001}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    networks:
+      - app-network
+
+  # SSURGO REST API — parallel shapefile processing
+  ssurgo:
+    build:
+      context: ./python-services/ssurgo-service
+      dockerfile: Dockerfile
+    image: ssurgo-processor:latest
+    ports:
+      - "${SSURGO_SERVICE_PORT:-8000}:${SSURGO_SERVICE_PORT:-8000}"
+    environment:
+      - DB_HOST=host.docker.internal  # Connect to host's PostgreSQL in development
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SSURGO_SERVICE_PORT=${SSURGO_SERVICE_PORT:-8000}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - EXPLAIN_DEBUG=${EXPLAIN_DEBUG:-1}
+    volumes:
+      - upload-files:/tmp/field_boundary_uploads  # Shared upload directory (EFS in production)
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:${SSURGO_SERVICE_PORT:-8000}/health')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    networks:
+      - app-network
+
+  # Node.js backend service
+  backend:
+    build:
+      context: ./node_server
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=5001
+      - SERVER_URL=${SERVER_URL:-http://localhost:5001}  # For email link generation
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - SENDGRID_FROM_EMAIL=${SENDGRID_FROM_EMAIL}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
+      - DB_HOST=host.docker.internal  # Connect to host's PostgreSQL in development
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - FARMER_ACCESS_TOKEN_SECRET=${FARMER_ACCESS_TOKEN_SECRET}
+      - FARMER_REFRESH_TOKEN_SECRET=${FARMER_REFRESH_TOKEN_SECRET}
+      - ADMIN_ACCESS_TOKEN_SECRET=${ADMIN_ACCESS_TOKEN_SECRET}
+      - ADMIN_REFRESH_TOKEN_SECRET=${ADMIN_REFRESH_TOKEN_SECRET}
+      - PASSWORD_RESET_TOKEN_SECRET=${PASSWORD_RESET_TOKEN_SECRET}
+      - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
+      # Service URLs — override to use DNS names when running as separate Fargate tasks
+      - SCRAPING_SERVICE_URL=${SCRAPING_SERVICE_URL:-http://localhost:8001}
+      - SSURGO_SERVICE_URL=${SSURGO_SERVICE_URL:-http://localhost:8000}
+    volumes:
+      - upload-files:/tmp/field_boundary_uploads  # Shared upload directory (EFS in production)
+    depends_on:
+      scraper:
+        condition: service_healthy
+      ssurgo:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+
+volumes:
+  upload-files:  # Shared upload directory for shapefile processing (use EFS in production)
+
+networks:
+  app-network:
+    name: scraper-network
+    driver: bridge
