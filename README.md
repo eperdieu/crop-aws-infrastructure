@@ -35,7 +35,7 @@ Farmers have many programs available for adopting sustainable growing practices,
 ## CI/CD pipeline
 The original Fall 2025 pipeline design is below. It deployed to EKS. The team later moved to ECS Fargate, so the deploy stage now targets ECS instead.
 
-![CI/CD pipeline, original Fall 2025 design](architecture/arch_diargam.png)
+![CI/CD pipeline, original Fall 2025 design](assets/arch_diargam.png)
 
 ## My role
 * Built and maintained AWS infrastructure as code with Terraform
