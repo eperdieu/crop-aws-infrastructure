@@ -38,7 +38,7 @@ The original Fall 2025 pipeline design is below. It deployed to EKS. The team la
 ## CI/CD pipeline
 The current pipeline, from a developer push to a running AWS environment.
 
-<img src="architecture/cicd_pipeline_fall2025.png" alt="CI/CD pipeline" width="800">
+<img src="assets/arch_diagram.png" alt="CI/CD pipeline" width="800">
 
 ## My role
 * Built and maintained AWS infrastructure as code with Terraform
