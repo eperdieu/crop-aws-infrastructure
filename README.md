@@ -1,4 +1,4 @@
-![C.R.O.P. banner](assets/crop_banner.png)
+![C.R.O.P. banner](assets/crop_banner640x320.png)
 
 # C.R.O.P. Conservation and Revenue Opportunity Portal
 
