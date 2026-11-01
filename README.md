@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/crop_banner_640x320.png" alt="C.R.O.P. banner" width="100%"></p>
+<p align="center"><img src="assets/crop_banner_2560x1280_final.png" alt="C.R.O.P. banner" width="100%"></p>
 
 # C.R.O.P. Conservation and Revenue Opportunity Portal
 
