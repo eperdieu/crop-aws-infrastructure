@@ -35,7 +35,7 @@ Farmers have many programs available for adopting sustainable growing practices,
 ## CI/CD pipeline
 The current pipeline, from a developer push to a running AWS environment.
 
-<p align="center"><img src="assets/cicd_pipeline_fall2025.png" alt="C.R.O.P. CI/CD pipeline"></p>
+<p align="center"><img src="assets/cicd_pipeline.svg" alt="C.R.O.P. CI/CD pipeline" width="100%"></p>
 
 ## My role
 * Built and maintained AWS infrastructure as code with Terraform
@@ -56,8 +56,5 @@ The current pipeline, from a developer push to a running AWS environment.
 
 ## Skills shown
 AWS (ECS Fargate, RDS, ECR, Secrets Manager), Terraform, Docker, CI/CD, GitHub Actions, Python, SQL, API development, authentication, technical documentation
-
-## Notes
-This repo contains no keys, passwords, state files, account IDs, or partner data.
 
 **[Connect with me on LinkedIn](https://www.linkedin.com/in/ethan-perdieu)**
