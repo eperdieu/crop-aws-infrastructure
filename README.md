@@ -1,4 +1,4 @@
-![C.R.O.P. banner](assets/crop_banner_640x320.png)
+<p align="center"><img src="assets/crop_banner_640x320.png" alt="C.R.O.P. banner" width="640"></p>
 
 # C.R.O.P. Conservation and Revenue Opportunity Portal
 
@@ -8,10 +8,10 @@ Indiana Soybean Alliance | Purdue Data Mine
 
 An interactive web platform that gathers agricultural conservation and incentive programs from sources such as the USDA and NRCS and shows them to farmers based on where their fields are. It makes it easier for farmers to find and use sustainable growing programs by putting them in one place. Presented at the 2026 Corporate Partners Symposium.
 
-This repo documents my contribution as the DevOps and cloud engineer on a team of 8, from July 2025 to June 2026.
+This repo documents my contribution as the DevOps and cloud engineer on a team of 8, from August 2025 to May 2026.
 
 ## The problem
-Farmers have many programs available for adopting sustainable growing practices, but the programs are complex and spread across many sources, so they often go unused. CROP brings them together and presents them geographically.
+Farmers have many programs available for adopting sustainable growing practices, but the programs are complex and spread across many sources, so they often go unused. C.R.O.P. brings them together and presents them geographically.
 
 ## What the platform does (team work)
 * Interactive map for searching programs by location
@@ -33,12 +33,9 @@ Farmers have many programs available for adopting sustainable growing practices,
 * AWS and Terraform for production infrastructure
 
 ## CI/CD pipeline
-The original Fall 2025 pipeline design is below. It deployed to EKS. The team later moved to ECS Fargate, so the deploy stage now targets ECS instead.
-
-## CI/CD pipeline
 The current pipeline, from a developer push to a running AWS environment.
 
-<img src="assets/arch_diagram.png" alt="CI/CD pipeline" width="800">
+<p align="center"><img src="architecture/cicd_pipeline_fall2025.png" alt="C.R.O.P. CI/CD pipeline" width="800"></p>
 
 ## My role
 * Built and maintained AWS infrastructure as code with Terraform
@@ -57,14 +54,10 @@ The current pipeline, from a developer push to a running AWS environment.
 * Moved from EKS to ECS Fargate to reduce operational overhead for a small team
 * Replaced a NAT Gateway with VPC interface endpoints to lower cost
 
-## Documentation in this repo
-* [Deployment notes](docs/deployment-notes.md): how the frontend and backend were containerized and shipped through CI/CD
-* [Git workflow](docs/git-workflow.md): the branch and pull request process our team followed
-
 ## Skills shown
 AWS (ECS Fargate, RDS, ECR, Secrets Manager), Terraform, Docker, CI/CD, GitHub Actions, Python, SQL, API development, authentication, technical documentation
 
 ## Notes
 This repo contains no keys, passwords, state files, account IDs, or partner data.
 
-Connect with me on LinkedIn: https://www.linkedin.com/in/ethan-perdieu-1438271b8
+**[Connect with me on LinkedIn](https://www.linkedin.com/in/ethan-perdieu)**
